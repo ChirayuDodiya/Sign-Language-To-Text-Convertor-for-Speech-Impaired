@@ -80,6 +80,7 @@ while True:
             print(f"Error while resizing: {e}")
     cv2.imshow("Image", img)
     interrupt = cv2.waitKey(5)
+    
     if interrupt & 0xFF == ord('a'):
         cv2.imwrite(directory+'A/'+str(count['a'])+'.jpg',FinalImage)
         print(count['a'])
