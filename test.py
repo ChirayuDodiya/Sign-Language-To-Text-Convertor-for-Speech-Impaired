@@ -4,27 +4,56 @@ from cvzone.ClassificationModule import Classifier
 import numpy as np
 import math
 
-# Initialize variables
 cap = cv2.VideoCapture(0)
 detector = HandDetector(maxHands=1)
 imgSize = 224
 offset = 30
-margin = 20  # To prevent point loss at the border
+margin = 20
 
-# Load your classifier model
-classifier = Classifier("Mod/keras_model.h5", "Mod/labels.txt")
+# Load two separate models for left and right hands
+classifier_left = Classifier("Model/keras_model_left.h5", "Model/labels_left.txt")
+classifier_right = Classifier("Model/keras_model_right.h5", "Model/labels_right.txt")
 
 fingerColors = {
-    'thumb': (0, 0, 255),   # Red
-    'index': (0, 255, 0),   # Green
-    'middle': (255, 0, 0),  # Blue
-    'ring': (0, 255, 255),  # Yellow
-    'pinky': (255, 0, 255)  # Purple
+    'thumb': (0, 0, 255), 
+    'index': (0, 255, 0), 
+    'middle': (255, 0, 0),
+    'ring': (0, 250, 250),
+    'pinky': (255, 0, 255)
 }
-orange = (0, 165, 255)  # Orange color for left hand wrist-to-finger connections
-black = (0, 0, 0)       # Black color for right hand wrist-to-finger connections
 
-# Connections corresponding to each finger
+nodeColors = [
+    (0, 0, 200),
+    (0, 0, 170),
+    (0, 0, 140),
+    (0, 0, 110),
+
+    (0, 0, 80),
+
+    (0, 200, 0),
+    (0, 170, 0),
+    (0, 140, 0),
+    (0, 110, 0),
+
+    (200, 0, 0),
+    (170, 0, 0),
+    (140, 0, 0),
+    (110, 0, 0),
+
+    (0, 200, 200),
+    (0, 170, 170),
+    (0, 140, 140),
+    (0, 110, 110),
+
+    (200, 0, 200),
+    (170, 0, 170),
+    (140, 0, 140),
+    (110, 0, 110),
+]
+
+orange = (0, 165, 255)
+black = (0, 0, 0)
+
 fingerConnections = {
     'thumb': [(1, 2), (2, 3), (3, 4)],
     'index': [(5, 6), (6, 7), (7, 8)],
@@ -52,7 +81,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
             imgResize = np.ones((imgSize, wCal, 3), np.uint8) * 255
             wGap = math.ceil((imgSize - wCal) / 2)
 
-            # Drawing finger connections
             for finger, connections in fingerConnections.items():
                 color = fingerColors[finger]
                 for connection in connections:
@@ -67,7 +95,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                     cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
-            # Wrist-to-finger connections
             wristColor = orange if handType == 'Left' else black
             for fingertip in fingertipIndexes:
                 point1 = lmList[wristIndex]
@@ -81,7 +108,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Connecting fingertip points (4-8, 8-12, 12-16, 16-20)
             for i in range(len(fingertipIndexes) - 1):
                 point1 = lmList[fingertipIndexes[i]]
                 point2 = lmList[fingertipIndexes[i + 1]]
@@ -92,13 +118,12 @@ def crop_resize_img(lmList, imgSize, margin, handType):
                 x2 = np.interp(point2[0], [xMin, xMax], [0, wCal])
                 y2 = np.interp(point2[1], [yMin, yMax], [0, imgSize])
 
-                cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
+                cv2.line(imgResize, (int(x1), int(y1)), (int (x2), int(y2)), wristColor, 2)
 
-            # Drawing points
-            for point in lmList:
+            for i, point in enumerate(lmList):
                 x = np.interp(point[0], [xMin, xMax], [0, wCal])
                 y = np.interp(point[1], [yMin, yMax], [0, imgSize])
-                cv2.circle(imgResize, (int(x), int(y)), 5, (0, 0, 0), cv2.FILLED)
+                cv2.circle(imgResize, (int(x), int(y)), 5, nodeColors[i], cv2.FILLED)
 
             FinalImage = np.ones((imgSize, imgSize, 3), np.uint8) * 255
             FinalImage[:, wGap:wCal + wGap] = imgResize
@@ -109,7 +134,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
             imgResize = np.ones((hCal, imgSize, 3), np.uint8) * 255
             hGap = math.ceil((imgSize - hCal) / 2)
 
-            # Drawing finger connections
             for finger, connections in fingerConnections.items():
                 color = fingerColors[finger]
                 for connection in connections:
@@ -124,7 +148,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                     cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
-            # Wrist-to-finger connections
             wristColor = orange if handType == 'Left' else black
             for fingertip in fingertipIndexes:
                 point1 = lmList[wristIndex]
@@ -138,7 +161,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Connecting fingertip points (4-8, 8-12, 12-16, 16-20)
             for i in range(len(fingertipIndexes) - 1):
                 point1 = lmList[fingertipIndexes[i]]
                 point2 = lmList[fingertipIndexes[i + 1]]
@@ -151,11 +173,10 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Drawing points
-            for point in lmList:
+            for i, point in enumerate(lmList):
                 x = np.interp(point[0], [xMin, xMax], [0, imgSize])
                 y = np.interp(point[1], [yMin, yMax], [0, hCal])
-                cv2.circle(imgResize, (int(x), int(y)), 5, (0, 0, 0), cv2.FILLED)
+                cv2.circle(imgResize, (int(x), int(y)), 5, nodeColors[i], cv2.FILLED)
 
             FinalImage = np.ones((imgSize, imgSize, 3), np.uint8) * 255
             FinalImage[hGap:hCal + hGap, :] = imgResize
@@ -166,6 +187,27 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
     return FinalImage
 
+with open("Model/labels_left.txt", "r") as f:
+    labels_dict_left = {}
+    for line in f.readlines():
+        idx, label = line.strip().split()
+        labels_dict_left[int(idx)] = label
+
+with open("Model/labels_right.txt", "r") as f:
+    labels_dict_right = {}
+    for line in f.readlines():
+        idx, label = line.strip().split()
+        labels_dict_right[int(idx)] = label
+
+output_string = ""
+font_size = 1
+font_thickness = 2
+max_string_length = 28
+frame_count = 11
+
+consecutive_predictions = []
+consecutive_count = 0
+
 while True:
     success, img = cap.read()
     hands, img = detector.findHands(img)
@@ -175,16 +217,40 @@ while True:
         lmList = hand["lmList"]
         handType = hand["type"]
 
-        # Crop and resize the hand image
         FinalImage = crop_resize_img(lmList, imgSize, margin, handType)
 
-        # Use the classifier to predict the gesture based on the cropped and resized image
-        prediction, index = classifier.getPrediction(FinalImage)
+        if handType == "Left":
+            _, prediction = classifier_left.getPrediction(FinalImage)
+        else:
+            _, prediction = classifier_right.getPrediction(FinalImage)
 
-        cv2.imshow("Cropped Hand", FinalImage)
-        cv2.imshow("Image", img)
+        if consecutive_predictions and prediction == consecutive_predictions[-1]:
+            consecutive_count += 1
+        else:
+            consecutive_predictions = [prediction]
+            consecutive_count = 1
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+        if consecutive_count == frame_count:
+            if handType == "Left":
+                label = labels_dict_left[prediction]
+            else:
+                label = labels_dict_right[prediction]
+            if label == "del":
+                if output_string:
+                    output_string = output_string[:-1]
+            else:
+                output_string += label
+            consecutive_predictions = []
+            consecutive_count = 0
+
+    if len(output_string) > max_string_length:
+        output_string = output_string[-max_string_length:]
+
+    cv2.putText(img, output_string, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 0), font_thickness )
+
+    cv2.imshow("Image", img)
+
+    if cv2.waitKey(1) & 0xFF == 27:
         break
 
 cap.release()
