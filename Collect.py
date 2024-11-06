@@ -3,28 +3,83 @@ from cvzone.HandTrackingModule import HandDetector
 import numpy as np
 import os
 import math
+import string
 
-directory1 = 'Da/'
-directory2 = 'Te/'
+directory1 = 'Data/'
+directory2 = 'Test/'
 cap = cv2.VideoCapture(0)
 detector = HandDetector(maxHands=1)
 imgSize = 224
-margin = 20  # Margin to prevent points from being cut off
-maxSamples = 150
+margin = 20
+maxSamples = 800
 maxTest = maxSamples + math.ceil(maxSamples / 4)
 
-# Define colors for each finger
-fingerColors = {
-    'thumb': (0, 0, 255),   # Red
-    'index': (0, 255, 0),   # Green
-    'middle': (255, 0, 0),  # Blue
-    'ring': (0, 255, 255),  # Yellow
-    'pinky': (255, 0, 255)  # Purple
-}
-orange = (0, 165, 255)  # Orange color for left hand wrist-to-finger connections
-black = (0, 0, 0)       # Black color for right hand wrist-to-finger connections
+if not os.path.exists(directory1):
+    os.makedirs(directory1)
 
-# Connections corresponding to each finger
+if not os.path.exists(directory2):
+    os.makedirs(directory2)
+
+for char in string.ascii_uppercase:
+    subdir1 = os.path.join(directory1, char)
+    subdir2 = os.path.join(directory2, char)
+
+    if not os.path.exists(subdir1):
+        os.makedirs(subdir1)
+
+    if not os.path.exists(subdir2):
+        os.makedirs(subdir2)
+
+if not os.path.exists(directory1 + '_'):
+    os.makedirs(directory1 + '_')
+if not os.path.exists(directory2 + '_'):
+    os.makedirs(directory2 + '_')
+
+if not os.path.exists(directory1 + 'del'):
+    os.makedirs(directory1 + 'del')
+if not os.path.exists(directory2 + 'del'):
+    os.makedirs(directory2 + 'del')
+
+fingerColors = {
+    'thumb': (0, 0, 255),
+    'index': (0, 255, 0),
+    'middle': (255, 0, 0),
+    'ring': (0, 250, 250),
+    'pinky': (255, 0, 255)
+}
+
+nodeColors = [
+(0, 0, 200),
+(0, 0, 170),
+(0, 0, 140),
+(0, 0, 110),
+
+(0, 0, 80),
+
+(0, 200, 0),
+(0, 170, 0),
+(0, 140, 0),
+(0, 110, 0),
+
+(200, 0, 0),
+(170, 0, 0),
+(140, 0, 0),
+(110, 0, 0),
+
+(0, 200, 200),
+(0, 170, 170),
+(0, 140, 140),
+(0, 110, 110),
+
+(200, 0, 200),
+(170, 0, 170),
+(140, 0, 140),
+(110, 0, 110),
+]
+
+orange = (0, 165, 255)
+black = (0, 0, 0)
+
 fingerConnections = {
     'thumb': [(1, 2), (2, 3), (3, 4)],
     'index': [(5, 6), (6, 7), (7, 8)],
@@ -33,7 +88,6 @@ fingerConnections = {
     'pinky': [(17, 18), (18, 19), (19, 20)]
 }
 
-# Wrist point index in landmark list (0) and fingertip indexes
 wristIndex = 0
 fingertipIndexes = [1, 5, 9, 13, 17]
 
@@ -53,7 +107,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
             imgResize = np.ones((imgSize, wCal, 3), np.uint8) * 255
             wGap = math.ceil((imgSize - wCal) / 2)
 
-            # Drawing finger connections
             for finger, connections in fingerConnections.items():
                 color = fingerColors[finger]
                 for connection in connections:
@@ -68,7 +121,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                     cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
-            # Wrist-to-finger connections
             wristColor = orange if handType == 'Left' else black
             for fingertip in fingertipIndexes:
                 point1 = lmList[wristIndex]
@@ -82,7 +134,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Connecting fingertip points (4-8, 8-12, 12-16, 16-20)
             for i in range(len(fingertipIndexes) - 1):
                 point1 = lmList[fingertipIndexes[i]]
                 point2 = lmList[fingertipIndexes[i + 1]]
@@ -93,13 +144,12 @@ def crop_resize_img(lmList, imgSize, margin, handType):
                 x2 = np.interp(point2[0], [xMin, xMax], [0, wCal])
                 y2 = np.interp(point2[1], [yMin, yMax], [0, imgSize])
 
-                cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
+                cv2.line(imgResize, (int(x1), int(y1)), (int (x2), int(y2)), wristColor, 2)
 
-            # Drawing points
-            for point in lmList:
+            for i, point in enumerate(lmList):
                 x = np.interp(point[0], [xMin, xMax], [0, wCal])
                 y = np.interp(point[1], [yMin, yMax], [0, imgSize])
-                cv2.circle(imgResize, (int(x), int(y)), 5, (0, 0, 0), cv2.FILLED)
+                cv2.circle(imgResize, (int(x), int(y)), 5, nodeColors[i], cv2.FILLED)
 
             FinalImage = np.ones((imgSize, imgSize, 3), np.uint8) * 255
             FinalImage[:, wGap:wCal + wGap] = imgResize
@@ -110,7 +160,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
             imgResize = np.ones((hCal, imgSize, 3), np.uint8) * 255
             hGap = math.ceil((imgSize - hCal) / 2)
 
-            # Drawing finger connections
             for finger, connections in fingerConnections.items():
                 color = fingerColors[finger]
                 for connection in connections:
@@ -125,7 +174,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                     cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
-            # Wrist-to-finger connections
             wristColor = orange if handType == 'Left' else black
             for fingertip in fingertipIndexes:
                 point1 = lmList[wristIndex]
@@ -139,7 +187,6 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Connecting fingertip points (4-8, 8-12, 12-16, 16-20)
             for i in range(len(fingertipIndexes) - 1):
                 point1 = lmList[fingertipIndexes[i]]
                 point2 = lmList[fingertipIndexes[i + 1]]
@@ -152,11 +199,10 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
                 cv2.line(imgResize, (int(x1), int(y1)), (int(x2), int(y2)), wristColor, 2)
 
-            # Drawing points
-            for point in lmList:
+            for i, point in enumerate(lmList):
                 x = np.interp(point[0], [xMin, xMax], [0, imgSize])
                 y = np.interp(point[1], [yMin, yMax], [0, hCal])
-                cv2.circle(imgResize, (int(x), int(y)), 5, (0, 0, 0), cv2.FILLED)
+                cv2.circle(imgResize, (int(x), int(y)), 5, nodeColors[i], cv2.FILLED)
 
             FinalImage = np.ones((imgSize, imgSize, 3), np.uint8) * 255
             FinalImage[hGap:hCal + hGap, :] = imgResize
@@ -167,12 +213,14 @@ def crop_resize_img(lmList, imgSize, margin, handType):
 
     return FinalImage
 
-
-
-
 while True:
     count = {
-        'a': len(os.listdir(directory1+"/A"))+len(os.listdir(directory2+"/A")),
+
+        # Count number of samples collected for each letter
+    #count = {letter: len(os.listdir(f'{directory1}{letter}')) + len(os.listdir(f'{directory2}{letter}'))
+          #   for letter in string.ascii_uppercase + '_='}
+
+             'a': len(os.listdir(directory1+"/A"))+len(os.listdir(directory2+"/A")),
              'b': len(os.listdir(directory1+"/B"))+len(os.listdir(directory2+"/B")),
              'c': len(os.listdir(directory1+"/C"))+len(os.listdir(directory2+"/C")),
              'd': len(os.listdir(directory1+"/D"))+len(os.listdir(directory2+"/D")),
@@ -198,13 +246,16 @@ while True:
              'x': len(os.listdir(directory1+"/X"))+len(os.listdir(directory2+"/X")),
              'y': len(os.listdir(directory1+"/Y"))+len(os.listdir(directory2+"/Y")),
              'z': len(os.listdir(directory1+"/Z"))+len(os.listdir(directory2+"/Z")),
+             '_': len(os.listdir(directory1+"/_"))+len(os.listdir(directory2+"/_")),
+             '=': len(os.listdir(directory1+"/del"))+len(os.listdir(directory2+"/del")),
              }
+
     success, img = cap.read()
     hands, img = detector.findHands(img, draw=False)
     if hands:
         hand = hands[0]
-        lmList = hand['lmList']  # List of 21 Landmark points
-        handType = hand['type']  # 'Left' or 'Right'
+        lmList = hand['lmList']  
+        handType = hand['type'] 
 
         FinalImage = crop_resize_img(lmList, imgSize, margin, handType)
         cv2.imshow("FinalImage", FinalImage)
@@ -212,184 +263,31 @@ while True:
     cv2.imshow("Image", img)
     interrupt = cv2.waitKey(5)
 
-    if interrupt & 0xFF == ord('a') and count['a'] < maxSamples:
-        cv2.imwrite(directory1+'A/'+'A-'+str(count['a'])+'.jpg',FinalImage)
-        print(count['a'])
-    elif interrupt & 0xFF == ord('a') and count['a'] < maxTest:
-        cv2.imwrite(directory2+'A/'+'A-'+str(count['a'])+'.jpg',FinalImage)
-        print(count['a'])
+    for letter in 'abcdefghijklmnopqrstuvwxyz':
+        if interrupt & 0xFF == ord(letter) and count[letter] < maxSamples:
+            cv2.imwrite(f'{directory1}{letter.upper()}/{letter.upper()}-{count[letter]}.jpg', FinalImage)
+            print(count[letter])
+        elif interrupt & 0xFF == ord(letter) and count[letter] < maxTest:
+            cv2.imwrite(f'{directory2}{letter.upper()}/{letter.upper()}-{count[letter]}.jpg', FinalImage)
+            print(count[letter])
+     
+    if interrupt & 0xFF == ord('-') and count['_'] < maxSamples:
+        cv2.imwrite(f'{directory1}_/_-{count["_"]}.jpg', FinalImage)
+        print(count["_"])
 
-    elif interrupt & 0xFF == ord('b') and count['b'] < maxSamples:
-        cv2.imwrite(directory1+'B/'+'B-'+str(count['b'])+'.jpg',FinalImage)
-        print(count['b'])
-    elif interrupt & 0xFF == ord('b') and count['b'] < maxTest:
-        cv2.imwrite(directory2+'B/'+'B-'+str(count['b'])+'.jpg',FinalImage)
-        print(count['b'])
+    elif interrupt & 0xFF == ord('-') and count['_'] < maxTest:
+        cv2.imwrite(f'{directory2}_/_-{count["_"]}.jpg', FinalImage)
+        print(count["_"])
 
-    elif interrupt & 0xFF == ord('c') and count['c'] < maxSamples:
-        cv2.imwrite(directory1+'C/'+'C-'+str(count['c'])+'.jpg',FinalImage)
-        print(count['c'])
-    elif interrupt & 0xFF == ord('c') and count['c'] < maxTest:
-        cv2.imwrite(directory2+'C/'+'C-'+str(count['c'])+'.jpg',FinalImage)
-        print(count['c'])
+    if interrupt & 0xFF == ord('=') and count['='] < maxSamples:
+        cv2.imwrite(f'{directory1}del/-{count["="]}.jpg', FinalImage)
+        print(count["="])
 
-    elif interrupt & 0xFF == ord('d') and count['d'] < maxSamples:
-        cv2.imwrite(directory1+'D/'+'D-'+str(count['d'])+'.jpg',FinalImage)
-        print(count['d'])
-    elif interrupt & 0xFF == ord('d') and count['d'] < maxTest:
-        cv2.imwrite(directory2+'D/'+'D-'+str(count['d'])+'.jpg',FinalImage)
-        print(count['d'])
+    elif interrupt & 0xFF == ord('=') and count['='] < maxTest:
+        cv2.imwrite(f'{directory2}del/-{count["="]}.jpg', FinalImage)
+        print(count["="])
 
-    elif interrupt & 0xFF == ord('e') and count['e'] < maxSamples:
-        cv2.imwrite(directory1+'E/'+'E-'+str(count['e'])+'.jpg',FinalImage)
-        print(count['e'])
-    elif interrupt & 0xFF == ord('e') and count['e'] < maxTest:
-        cv2.imwrite(directory2+'E/'+'E-'+str(count['e'])+'.jpg',FinalImage)
-        print(count['e'])
+    if interrupt & 0xFF == 27:
+        break
 
-    elif interrupt & 0xFF == ord('f') and count['f'] < maxSamples:
-        cv2.imwrite(directory1+'F/'+'F-'+str(count['f'])+'.jpg',FinalImage)
-        print(count['f'])
-    elif interrupt & 0xFF == ord('f') and count['f'] < maxTest:
-        cv2.imwrite(directory2+'F/'+'F-'+str(count['f'])+'.jpg',FinalImage)
-        print(count['f'])
-
-    elif interrupt & 0xFF == ord('g') and count['g'] < maxSamples:
-        cv2.imwrite(directory1+'G/'+'G-'+str(count['g'])+'.jpg',FinalImage)
-        print(count['g'])
-    elif interrupt & 0xFF == ord('g') and count['g'] < maxTest:
-        cv2.imwrite(directory2+'G/'+'G-'+str(count['g'])+'.jpg',FinalImage)
-        print(count['g'])
-
-    elif interrupt & 0xFF == ord('h') and count['h'] < maxSamples:
-        cv2.imwrite(directory1+'H/'+'H-'+str(count['h'])+'.jpg',FinalImage)
-        print(count['h'])
-    elif interrupt & 0xFF == ord('h') and count['h'] < maxTest:
-        cv2.imwrite(directory2+'H/'+'H-'+str(count['h'])+'.jpg',FinalImage)
-        print(count['h'])
-
-    elif interrupt & 0xFF == ord('i') and count['i'] < maxSamples:
-        cv2.imwrite(directory1+'I/'+'I-'+str(count['i'])+'.jpg',FinalImage)
-        print(count['i'])
-    elif interrupt & 0xFF == ord('i') and count['i'] < maxTest:
-        cv2.imwrite(directory2+'I/'+'I-'+str(count['i'])+'.jpg',FinalImage)
-        print(count['i'])
-
-    elif interrupt & 0xFF == ord('j') and count['j'] < maxSamples:
-        cv2.imwrite(directory1+'J/'+'J-'+str(count['j'])+'.jpg',FinalImage)
-        print(count['j'])
-    elif interrupt & 0xFF == ord('j') and count['j'] < maxTest:
-        cv2.imwrite(directory2+'J/'+'J-'+str(count['j'])+'.jpg',FinalImage)
-        print(count['j'])
-
-    elif interrupt & 0xFF == ord('k') and count['k'] < maxSamples:
-        cv2.imwrite(directory1+'K/'+'K-'+str(count['k'])+'.jpg',FinalImage)
-        print(count['k'])
-    elif interrupt & 0xFF == ord('k') and count['k'] < maxTest:
-        cv2.imwrite(directory2+'K/'+'K-'+str(count['k'])+'.jpg',FinalImage)
-        print(count['k'])
-
-    elif interrupt & 0xFF == ord('l') and count['l'] < maxSamples:
-        cv2.imwrite(directory1+'L/'+'L-'+str(count['l'])+'.jpg',FinalImage)
-        print(count['l'])
-    elif interrupt & 0xFF == ord('l') and count['l'] < maxTest:
-        cv2.imwrite(directory2+'L/'+'L-'+str(count['l'])+'.jpg',FinalImage)
-        print(count['l'])
-    
-    elif interrupt & 0xFF == ord('m') and count['m'] < maxSamples:
-        cv2.imwrite(directory1+'M/'+'M-'+str(count['m'])+'.jpg',FinalImage)
-        print(count['m'])
-    elif interrupt & 0xFF == ord('m') and count['m'] < maxTest:
-        cv2.imwrite(directory2+'M/'+'M-'+str(count['m'])+'.jpg',FinalImage)
-        print(count['m'])
-
-    elif interrupt & 0xFF == ord('n') and count['n'] < maxSamples:
-        cv2.imwrite(directory1+'N/'+'N-'+str(count['n'])+'.jpg',FinalImage)
-        print(count['n'])
-    elif interrupt & 0xFF == ord('n') and count['n'] < maxTest:
-        cv2.imwrite(directory2+'N/'+'N-'+str(count['n'])+'.jpg',FinalImage)
-        print(count['n'])
-
-    elif interrupt & 0xFF == ord('o') and count['o'] < maxSamples:
-        cv2.imwrite(directory1+'O/'+'O-'+str(count['o'])+'.jpg',FinalImage)
-        print(count['o'])
-    elif interrupt & 0xFF == ord('o') and count['o'] < maxTest:
-        cv2.imwrite(directory2+'O/'+'O-'+str(count['o'])+'.jpg',FinalImage)
-        print(count['o'])
-
-    elif interrupt & 0xFF == ord('p') and count['p'] < maxSamples:
-        cv2.imwrite(directory1+'P/'+'P-'+str(count['p'])+'.jpg',FinalImage)
-        print(count['p'])
-    elif interrupt & 0xFF == ord('p') and count['p'] < maxTest:
-        cv2.imwrite(directory2+'P/'+'P-'+str(count['p'])+'.jpg',FinalImage)
-        print(count['p'])
-
-    elif interrupt & 0xFF == ord('q') and count['q'] < maxSamples:
-        cv2.imwrite(directory1+'Q/'+'Q-'+str(count['q'])+'.jpg',FinalImage)
-        print(count['q'])
-    elif interrupt & 0xFF == ord('q') and count['q'] < maxTest:
-        cv2.imwrite(directory2+'Q/'+'Q-'+str(count['q'])+'.jpg',FinalImage)
-        print(count['q'])
-
-    elif interrupt & 0xFF == ord('r') and count['r'] < maxSamples:
-        cv2.imwrite(directory1+'R/'+'R-'+str(count['r'])+'.jpg',FinalImage)
-        print(count['r'])
-    elif interrupt & 0xFF == ord('r') and count['r'] < maxTest:
-        cv2.imwrite(directory2+'R/'+'R-'+str(count['r'])+'.jpg',FinalImage)
-        print(count['r'])
-
-    elif interrupt & 0xFF == ord('s') and count['s'] < maxSamples:
-        cv2.imwrite(directory1+'S/'+'S-'+str(count['s'])+'.jpg',FinalImage)
-        print(count['s'])
-    elif interrupt & 0xFF == ord('s') and count['s'] < maxTest:
-        cv2.imwrite(directory2+'S/'+'S-'+str(count['s'])+'.jpg',FinalImage)
-        print(count['s'])
-
-    elif interrupt & 0xFF == ord('t') and count['t'] < maxSamples:
-        cv2.imwrite(directory1+'T/'+'T-'+str(count['t'])+'.jpg',FinalImage)
-        print(count['t'])
-    elif interrupt & 0xFF == ord('t') and count['t'] < maxTest:
-        cv2.imwrite(directory2+'T/'+'T-'+str(count['t'])+'.jpg',FinalImage)
-        print(count['t'])
-
-    elif interrupt & 0xFF == ord('u') and count['u'] < maxSamples:
-        cv2.imwrite(directory1+'U/'+'U-'+str(count['u'])+'.jpg',FinalImage)
-        print(count['u'])
-    elif interrupt & 0xFF == ord('u') and count['u'] < maxTest:
-        cv2.imwrite(directory2+'U/'+'U-'+str(count['u'])+'.jpg',FinalImage)
-        print(count['u'])
-
-    elif interrupt & 0xFF == ord('v') and count['v'] < maxSamples:
-        cv2.imwrite(directory1+'V/'+'V-'+str(count['v'])+'.jpg',FinalImage)
-        print(count['v'])
-    elif interrupt & 0xFF == ord('v') and count['v'] < maxTest:
-        cv2.imwrite(directory2+'V/'+'V-'+str(count['v'])+'.jpg',FinalImage)
-        print(count['v'])
-
-    elif interrupt & 0xFF == ord('w') and count['w'] < maxSamples:
-        cv2.imwrite(directory1+'W/'+'W-'+str(count['w'])+'.jpg',FinalImage)
-        print(count['w'])
-    elif interrupt & 0xFF == ord('w') and count['w'] < maxTest:
-        cv2.imwrite(directory2+'W/'+'W-'+str(count['w'])+'.jpg',FinalImage)
-        print(count['w'])
-
-    elif interrupt & 0xFF == ord('x') and count['x'] < maxSamples:
-        cv2.imwrite(directory1+'X/'+'X-'+str(count['x'])+'.jpg',FinalImage)
-        print(count['x'])
-    elif interrupt & 0xFF == ord('x') and count['x'] < maxTest:
-        cv2.imwrite(directory2+'X/'+'X-'+str(count['x'])+'.jpg',FinalImage)
-        print(count['x'])
-
-    elif interrupt & 0xFF == ord('y') and count['y'] < maxSamples:
-        cv2.imwrite(directory1+'Y/'+'Y-'+str(count['y'])+'.jpg',FinalImage)
-        print(count['y'])
-    elif interrupt & 0xFF == ord('y') and count['y'] < maxTest:
-        cv2.imwrite(directory2+'Y/'+'Y-'+str(count['y'])+'.jpg',FinalImage)
-        print(count['y'])
-
-    elif interrupt & 0xFF == ord('z') and count['z'] < maxSamples:
-        cv2.imwrite(directory1+'Z/'+'Z-'+str(count['z'])+'.jpg',FinalImage)
-        print(count['z'])
-    elif interrupt & 0xFF == ord('z') and count['z'] < maxTest:
-        cv2.imwrite(directory2+'Z/'+'Z-'+str(count['z'])+'.jpg',FinalImage)
-        print(count['z'])
+cv2.destroyAllWindows()
