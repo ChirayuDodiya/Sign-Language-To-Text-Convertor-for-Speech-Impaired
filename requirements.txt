@@ -1,0 +1,5 @@
+cvzone
+mediapipe
+numpy
+tensorflow
+keras
