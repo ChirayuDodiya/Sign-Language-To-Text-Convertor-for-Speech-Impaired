@@ -47,7 +47,7 @@ We have mainly used Python and some of its libraries and tools to build this pro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ChirayuDodiya/ASL-to-Text
+   [git clone https://github.com/ChirayuDodiya/ASL-to-Text](https://github.com/ChirayuDodiya/Sign-Language-To-Text-Convertor-for-Speech-Impaired.git)
 
 2. Install required packages:
    ```bash
