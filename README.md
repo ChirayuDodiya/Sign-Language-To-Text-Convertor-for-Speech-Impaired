@@ -1,7 +1,7 @@
 
 
 
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=450&size=40&duration=2500&pause=1000&width=446&height=70&lines=%F0%9F%A4%9F+ASL+to+Text+)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=450&size=40&duration=2500&pause=1000&width=1500&height=70&lines=%F0%9F%A4%9F+Sign+Language+Translator+for+Speech-Impaired)](https://git.io/typing-svg)
 
 **Communication** is the act of transferring information from one place to another. Being able to communicate effectively is perhaps the most important of all life skills. It is what enables us to pass information to other people, and to understand what is said to us.
 Sign languages are an extremely important communication tool for many deaf and hard-of-hearing people and also for people who cannot speak.
@@ -113,16 +113,6 @@ In this section, we provide a demonstration of the ASL to Text Converter. Below 
 3. **Perform ASL Signs**:
    - Position your hand in front of the camera and perform the ASL signs.
    - The model will recognize the sign in real-time and display the corresponding letter on the screen.
-
-### Example Demonstration
-
-#### Sample Signs:
-
-| ASL Sign | Description                     |
-|----------|---------------------------------|
-| ![A](link_to_A_sign_image) | ASL Sign for Letter A             |
-| ![B](link_to_B_sign_image) | ASL Sign for Letter B             |
-| ![C](link_to_C_sign_image) | ASL Sign for Letter C             |
 
 #### Video Demonstration
 
