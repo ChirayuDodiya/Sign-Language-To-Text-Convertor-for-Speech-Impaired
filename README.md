@@ -34,12 +34,12 @@ We have mainly used Python and some of its libraries and tools to build this pro
 ## 🛠 Technologies Used
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.5.3-blue.svg)](https://opencv.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.4.1-orange.svg)](https://www.tensorflow.org/)
-[![Keras](https://img.shields.io/badge/Keras-2.4.3-red.svg)](https://keras.io/)
-[![Mediapipe](https://img.shields.io/badge/Mediapipe-0.8.6-green.svg)](https://mediapipe.dev/)
-[![Numpy](https://img.shields.io/badge/Numpy-1.19.5-blue.svg)](https://numpy.org/)
-[![cvzone](https://img.shields.io/badge/cvzone-1.5.2-lightgrey.svg)](https://pypi.org/project/cvzone/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.10.0.82-blue.svg)](https://opencv.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15.1-orange.svg)](https://www.tensorflow.org/)
+[![Keras](https://img.shields.io/badge/Keras-2.15.0-red.svg)](https://keras.io/)
+[![Mediapipe](https://img.shields.io/badge/Mediapipe-2.15.0-green.svg)](https://mediapipe.dev/)
+[![Numpy](https://img.shields.io/badge/Numpy-1.26.4-blue.svg)](https://numpy.org/)
+[![cvzone](https://img.shields.io/badge/cvzone-1.26.4-lightgrey.svg)](https://pypi.org/project/cvzone/)
 [![Teachable Machine](https://img.shields.io/badge/Teachable%20Machine-ML-orange.svg)](https://teachablemachine.withgoogle.com/)
 
 
