@@ -1,5 +1,6 @@
-cvzone
-mediapipe
-numpy
-tensorflow
-keras
+opencv-python==4.10.0.82
+tensorflow==2.15.1
+keras==2.15.0
+mediapipe==0.10.14
+numpy==1.26.4
+cvzone==1.6.1
