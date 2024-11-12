@@ -10,7 +10,9 @@ imgSize = 224
 offset = 30
 margin = 20
 
-# Load two separate models for left and right hands
+import os
+from cvzone.ClassificationModule import Classifier
+#Load two separate models for left and right hands
 classifier_left = Classifier("Model/keras_model_left.h5", "Model/labels_left.txt")
 classifier_right = Classifier("Model/keras_model_right.h5", "Model/labels_right.txt")
 
@@ -203,10 +205,10 @@ output_string = ""
 font_size = 1
 font_thickness = 2
 max_string_length = 28
-frame_count = 11
+frame_count = 10
 
 consecutive_predictions = []
-consecutive_count = 0
+consecutive_count = 10
 
 while True:
     success, img = cap.read()
@@ -246,7 +248,13 @@ while True:
     if len(output_string) > max_string_length:
         output_string = output_string[-max_string_length:]
 
-    cv2.putText(img, output_string, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 0), font_thickness )
+    position = (10, 50)
+
+    # Draw the border text (using the border color)
+    cv2.putText(img, output_string, position, cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 255, 127), 3, cv2.LINE_AA)
+
+    # Draw the main text (using black color)
+    cv2.putText(img, output_string, position, cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 0), 2, cv2.LINE_AA)
 
     cv2.imshow("Image", img)
 
