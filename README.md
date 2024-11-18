@@ -91,7 +91,7 @@ The process of developing the ASL to Text Converter involves three main steps: d
 ## 🤝 Contributors
 
 - [@Chirayu Dodiya](https://github.com/ChirayuDodiya)
-- [@Mayank](https://github.com/likemacc)
+- [@Mayank Bagul](https://github.com/likemacc)
 - [@Nandini Gadhvi](https://github.com/NadiniGadhvi)
 - [@Abhishek Guna](https://github.com/HINOKAM-ii)
 - [@Harshil Vasava](https://github.com/harshilV14)
