@@ -1,99 +1,190 @@
-import os
 import cv2
 import numpy as np
-import math
+import os
+import string
 from cvzone.ClassificationModule import Classifier
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from tqdm import tqdm
 from datetime import datetime
 
-# Read labels from file
-def read_labels(label_file):
-    labels = []
-    with open(label_file, 'r') as file:
-        for line in file:
-            label = line.strip().split()[1]
-            labels.append(label)
-    return labels
-
-# Define paths and models
-dataset_path = 'Test/'
-label_file_left = 'Model/labels_left.txt'
-label_file_right = 'Model/labels_right.txt'
-classifier_left = Classifier("Model/keras_model_left.h5", label_file_left)
-classifier_right = Classifier("Model/keras_model_right.h5", label_file_right)
-img_size = 224
-
-def preprocess_image(img):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    final_image = np.ones((img_size, img_size, 3), np.uint8) * 255
-    aspect_ratio = img.shape[0] / img.shape[1]
-
-    if aspect_ratio > 1:
-        k = img_size / img.shape[0]
-        w_cal = math.ceil(k * img.shape[1])
-        img_resize = cv2.resize(img, (w_cal, img_size))
-        w_gap = math.ceil((img_size - w_cal) / 2)
-        final_image[:, w_gap:w_cal + w_gap] = img_resize
-    else:
-        k = img_size / img.shape[1]
-        h_cal = math.ceil(k * img.shape[0])
-        img_resize = cv2.resize(img, (img_size, h_cal))
-        h_gap = math.ceil((img_size - h_cal) / 2)
-        final_image[h_gap:h_cal + h_gap, :] = img_resize
-
-    return final_image
+def get_hand_for_char(char):
+    """Determine which hand model should be used for a given character."""
+    if char in list(string.ascii_uppercase[:12]) + ['del']:  # A to L and del
+        return 'right'
+    elif char in list(string.ascii_uppercase[12:]) + ['_']:  # M to Z and _
+        return 'left'
+    return None
 
 def evaluate_model():
-    y_true = []
-    y_pred = []
+    # Initialize classifiers
+    classifier_left = Classifier("Model/keras_model_left.h5", "Model/labels_left.txt")
+    classifier_right = Classifier("Model/keras_model_right.h5", "Model/labels_right.txt")
+    
+    # Load labels
+    labels_left = {}
+    labels_right = {}
+    
+    with open("Model/labels_left.txt", "r") as f:
+        for line in f:
+            idx, label = line.strip().split()
+            labels_left[int(idx)] = label
+            
+    with open("Model/labels_right.txt", "r") as f:
+        for line in f:
+            idx, label = line.strip().split()
+            labels_right[int(idx)] = label
+    
+    # Test directory
+    test_dir = 'Test/'
+    
+    # Initialize counters and storage for detailed results
+    total_predictions = 0
+    correct_predictions = 0
+    class_accuracies = {}
+    class_counts = {}
+    detailed_results = {}
+    
+    # Process all letters, underscore, and delete
+    all_chars = list(string.ascii_uppercase) + ['_', 'del']
+    
+    print("Evaluating model accuracy...")
+    
+    # Iterate through all characters
+    for char in tqdm(all_chars):
+        # Skip if character's hand assignment is not defined
+        if get_hand_for_char(char) is None:
+            continue
+            
+        folder_name = char
+        if char == 'del':
+            folder_path = os.path.join(test_dir, 'del')
+        else:
+            folder_path = os.path.join(test_dir, char)
+            
+        if not os.path.exists(folder_path):
+            continue
+            
+        correct_class = 0
+        total_class = 0
+        detailed_results[char] = {
+            'correct_predictions': [],
+            'incorrect_predictions': []
+        }
+        
+        # Process each image in the folder
+        for img_name in os.listdir(folder_path):
+            if not img_name.endswith(('.jpg', '.jpeg', '.png')):
+                continue
+                
+            # Read and preprocess image
+            img_path = os.path.join(folder_path, img_name)
+            img = cv2.imread(img_path)
+            
+            if img is None:
+                continue
+                
+            # Get prediction only from the appropriate hand model
+            hand = get_hand_for_char(char)
+            true_label = char.lower()
+            
+            if hand == 'left':
+                prediction, index = classifier_left.getPrediction(img)
+                pred_label = labels_left[index].lower()
+            else:  # hand == 'right'
+                prediction, index = classifier_right.getPrediction(img)
+                pred_label = labels_right[index].lower()
+            
+            # Check if prediction matches the true label
+            is_correct = pred_label == true_label
+            
+            # Store detailed prediction information
+            prediction_info = {
+                'image': img_name,
+                'true_label': true_label,
+                'prediction': pred_label,
+                'hand_model': hand
+            }
+            
+            if is_correct:
+                correct_predictions += 1
+                correct_class += 1
+                detailed_results[char]['correct_predictions'].append(prediction_info)
+            else:
+                detailed_results[char]['incorrect_predictions'].append(prediction_info)
+            
+            total_predictions += 1
+            total_class += 1
+        
+        # Calculate and store class accuracy
+        if total_class > 0:
+            class_accuracy = (correct_class / total_class) * 100
+            class_accuracies[char] = class_accuracy
+            class_counts[char] = total_class
+    
+    # Calculate overall accuracy
+    overall_accuracy = (correct_predictions / total_predictions) * 100 if total_predictions > 0 else 0
+    
+    # Create results directory if it doesn't exist
+    results_dir = 'evaluation_results'
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+    
+    # Generate timestamp for the filename
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'{results_dir}/evaluation_results_{timestamp}.txt'
+    
+    # Write results to file
+    with open(filename, 'w') as f:
+        # Write header with timestamp
+        f.write(f"Sign Language Recognition Model Evaluation Results\n")
+        f.write(f"Evaluation Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("=" * 50 + "\n\n")
+        
+        # Write model configuration information
+        f.write("Model Configuration:\n")
+        f.write("- Right Hand Model: A to L, del\n")
+        f.write("- Left Hand Model: M to Z, _\n\n")
+        
+        # Write overall accuracy
+        f.write(f"Overall Accuracy: {overall_accuracy:.2f}%\n")
+        f.write(f"Total Samples: {total_predictions}\n\n")
+        
+        # Write per-class accuracies
+        f.write("Per-Class Performance:\n")
+        f.write("-" * 65 + "\n")
+        f.write(f"{'Class':^6} | {'Hand':^6} | {'Accuracy (%)':^12} | {'Sample Count':^12} | {'Correct':^8} | {'Incorrect':^9}\n")
+        f.write("-" * 65 + "\n")
+        
+        for char in sorted(class_accuracies.keys()):
+            hand = get_hand_for_char(char)
+            correct = len(detailed_results[char]['correct_predictions'])
+            incorrect = len(detailed_results[char]['incorrect_predictions'])
+            f.write(f"{char:^6} | {hand:^6} | {class_accuracies[char]:^12.2f} | {class_counts[char]:^12} | {correct:^8} | {incorrect:^9}\n")
+        
+        # Write detailed prediction analysis
+        f.write("\nDetailed Prediction Analysis:\n")
+        f.write("=" * 50 + "\n")
+        
+        for char in sorted(detailed_results.keys()):
+            f.write(f"\nClass: {char} (Using {get_hand_for_char(char)} hand model)\n")
+            f.write("-" * 20 + "\n")
+            
+            # Write incorrect predictions for analysis
+            if detailed_results[char]['incorrect_predictions']:
+                f.write("Incorrect Predictions:\n")
+                for pred in detailed_results[char]['incorrect_predictions']:
+                    f.write(f"  Image: {pred['image']}\n")
+                    f.write(f"  True Label: {pred['true_label']}\n")
+                    f.write(f"  Prediction: {pred['prediction']}\n")
+                    f.write("  ---\n")
+    
+    print(f"\nEvaluation results have been saved to: {filename}")
+    return overall_accuracy, class_accuracies, class_counts, filename
 
-    for label in read_labels(label_file_left):
-        folder_path = os.path.join(dataset_path, label)
-        images = os.listdir(folder_path)
-
-        for image_name in images:
-            image_path = os.path.join(folder_path, image_name)
-            img = cv2.imread(image_path)
-            final_image = preprocess_image(img)
-
-            prediction, index = classifier_left.getPrediction(final_image, draw=False)
-            predicted_label = label  # Since we are in left hand folder
-            y_true.append(label)
-            y_pred.append(predicted_label)
-
-    for label in read_labels(label_file_right):
-        folder_path = os.path.join(dataset_path, label)
-        images = os.listdir(folder_path)
-
-        for image_name in images:
-            image_path = os.path.join(folder_path, image_name)
-            img = cv2.imread(image_path)
-            final_image = preprocess_image(img)
-
-            prediction, index = classifier_right.getPrediction(final_image, draw=False)
-            predicted_label = label  # Since we are in right hand folder
-            y_true.append(label)
-            y_pred.append(predicted_label)
-
-    conf_matrix = confusion_matrix(y_true, y_pred, labels=list(set(y_true)))
-    class_report = classification_report(y_true, y_pred, labels=list(set(y_true)))
-    accuracy = (accuracy_score(y_true, y_pred)) * 100
-
-    return conf_matrix, class_report, accuracy
-
-def save_results(conf_matrix, class_report, accuracy):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    result_file = 'evaluation_report.txt'
-
-    with open(result_file, 'a') as file:
-        file.write(f"Run Date and Time: {timestamp}\n")
-        file.write(f"Accuracy: {accuracy:.2f}%\n")
-        file.write("Confusion Matrix:\n")
-        file.write(np.array2string(conf_matrix, separator=',') + '\n')
-        file.write("Classification Report:\n")
-        file.write(class_report + '\n')
-        file.write("=" * 50 + '\n')
-
-# Run the evaluation
-conf_matrix, class_report, accuracy = evaluate_model()
-save_results(conf_matrix, class_report, accuracy)
+if __name__ == "__main__":
+    overall_acc, class_acc, counts, results_file = evaluate_model()
+    
+    # Print summary to console
+    print("\nSummary of Results:")
+    print(f"Overall Accuracy: {overall_acc:.4f}%")
+    print(f"Total Classes Evaluated: {len(class_acc)}")
+    print(f"Detailed results have been saved to: {results_file}")
