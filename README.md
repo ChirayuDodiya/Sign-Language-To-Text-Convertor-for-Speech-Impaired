@@ -118,7 +118,7 @@ In this section, we provide a demonstration of the ASL to Text Converter. Below 
 
 Watch the following video to see the ASL to Text Converter in action:
 
-[![ASL to Text Demo](link_to_video_thumbnail)](https://drive.google.com/file/d/1ibvHMfsna9GtM5IRJya9GiTj9_yzX7bt/view)
+[ASL to Text Demo Video](https://drive.google.com/file/d/1ibvHMfsna9GtM5IRJya9GiTj9_yzX7bt/view)
 
 ### Notes
 
