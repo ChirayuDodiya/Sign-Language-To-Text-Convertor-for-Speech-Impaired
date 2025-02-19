@@ -6,11 +6,11 @@
 **Communication** is the act of transferring information from one place to another. Being able to communicate effectively is perhaps the most important of all life skills. It is what enables us to pass information to other people, and to understand what is said to us.
 Sign languages are an extremely important communication tool for many deaf and hard-of-hearing people and also for people who cannot speak.
 
-The **ASL to Text Converter** is a project aimed at translating American Sign Language (ASL) hand gestures into written text. This tool leverages machine learning and computer vision techniques to interpret sign language and provide accurate translations, making communication more accessible for deaf and hard-of-hearing individuals.
+The **Sign Language to Text Converter for Speech Impaired** is a project aimed at translating Sign Language hand gestures into written text. This tool leverages machine learning and computer vision techniques to interpret sign language and provide accurate translations, making communication more accessible for deaf and hard-of-hearing individuals.
 
 ## 🚀 Features
 
-- **Real-time Gesture Recognition**: Translates ASL signs into text instantly.
+- **Real-time Gesture Recognition**: Translates  hand signs into text instantly.
 - **High Accuracy**: Built on a robust machine learning model trained on a diverse dataset.
 - **Intuitive Interface**: User-friendly design for seamless interaction.
 - **Customizable Vocabulary**: Users can add or modify signs for personal use.
@@ -99,9 +99,9 @@ The process of developing the ASL to Text Converter involves three main steps: d
 
 ## 🎥 Demo
 
-In this section, we provide a demonstration of the ASL to Text Converter. Below are the steps to showcase how the application works, along with visual aids.
+In this section, we provide a demonstration of the Sign Language to Text Converter. Below are the steps to showcase how the application works, along with visual aids.
 
-### How to Use the ASL to Text Converter
+### How to Use the Sign Language to Text Converter
 
 1. **Start the Application**:
    - Run the `test.py` script to initiate the application.
@@ -110,15 +110,15 @@ In this section, we provide a demonstration of the ASL to Text Converter. Below 
 2. **User Interface**:
    - Upon running, a window will open showing the live feed from your webcam.
 
-3. **Perform ASL Signs**:
-   - Position your hand in front of the camera and perform the ASL signs.
+3. **Perform Hand Signs**:
+   - Position your hand in front of the camera and perform the hand signs.
    - The model will recognize the sign in real-time and display the corresponding letter on the screen.
 
 #### Video Demonstration
 
-Watch the following video to see the ASL to Text Converter in action:
+Watch the following video to see the Sign Language to Text Converter in action:
 
-[ASL to Text Demo Video](https://drive.google.com/file/d/1ibvHMfsna9GtM5IRJya9GiTj9_yzX7bt/view)
+[Sign Language to Text Demo Video](https://drive.google.com/file/d/1ibvHMfsna9GtM5IRJya9GiTj9_yzX7bt/view)
 
 ### Notes
 
