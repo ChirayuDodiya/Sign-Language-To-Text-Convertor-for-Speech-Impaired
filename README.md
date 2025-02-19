@@ -3,7 +3,7 @@
 
 [![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=450&size=40&duration=2500&pause=1000&width=1500&height=70&lines=%F0%9F%A4%98+Sign+Language+To+Text+Convertor+for+Speech+Impaired)](https://git.io/typing-svg)
 
-The **Sign Language to Text Converter for Speech Impaired** is a project aimed at translating Sign Language hand gestures into written text. This tool leverages machine learning and computer vision techniques to interpret sign language and provide accurate translations, making communication more accessible for deaf and hard-of-hearing individuals.
+The **Sign Language to Text Converter for Speech Impaired** is a project aimed at translating Sign Language into written text. It uses machine learning and computer vision to understand sign language and provide accurate translations, making communication more accessible and easy for people with hearing and speech impairments.
 
 ## 🚀 Features
 
