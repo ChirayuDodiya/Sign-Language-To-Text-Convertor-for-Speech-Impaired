@@ -23,11 +23,11 @@ We have mainly used Python and some of its libraries and tools to build this pro
   
 - **🔢 Numpy**: Used for model predictions, specifically for predicting different hand signs and the letters used.
 
-- **🖐 Mediapipe**: A cross-platform framework developed by Google for processing video and multimedia. It provides advanced capabilities for hand tracking and gesture recognition, making it ideal for real-time ASL recognition.
+- **🖐 Mediapipe**: A cross-platform framework developed by Google for processing video and multimedia. It provides advanced capabilities for hand tracking and gesture recognition, making it ideal for real-time Sign Language recognition.
 
 - **🔍 OpenCV**: An open-source computer vision and machine learning library that provides tools for image and video processing, essential for capturing and manipulating frames from a webcam.
 
-- **🧠 TensorFlow**: An open-source machine learning framework developed by Google, widely used for building and training machine learning models. In this project, TensorFlow runs the neural network model that recognizes ASL gestures.
+- **🧠 TensorFlow**: An open-source machine learning framework developed by Google, widely used for building and training machine learning models. In this project, TensorFlow runs the neural network model that recognizes Sign Language gestures.
 
 - **🤖 Teachable Machine**: A user-friendly web tool that allows anyone to create machine learning models without coding, designed for tasks like image classification and pose detection.
 
@@ -55,7 +55,7 @@ We have mainly used Python and some of its libraries and tools to build this pro
 
 ## 🏗 Process Overview
 
-The process of developing the ASL to Text Converter involves three main steps: data collection, model training, and testing. Here's how each step works:
+The process of developing the Sign Language to Text Converter involves three main steps: data collection, model training, and testing. Here's how each step works:
 
 ### 1. Data Collection
 
@@ -63,7 +63,7 @@ The process of developing the ASL to Text Converter involves three main steps: d
 - **Description**: This script is used to collect data for training the model. 
 - **How It Works**:
   1. Run the `collect.py` script.
-  2. The script opens a user interface where you can click on letters to indicate the corresponding ASL sign. The Data is stored in \Data folder.
+  2. The script opens a user interface where you can click on letters to indicate the corresponding Sign Language. The Data is stored in \Data folder.
   3. Each click records the hand gesture as a data sample, which is saved for training.
 
 ### 2. Model Training
@@ -73,7 +73,7 @@ The process of developing the ASL to Text Converter involves three main steps: d
 - **How It Works**:
   1. Once you have collected sufficient data, export it from `collect.py`.
   2. Upload the dataset to Teachable Machine.
-  3. Train the model using the uploaded data to recognize the ASL signs.
+  3. Train the model using the uploaded data to recognize the Sign Language.
   4. After training, export the model as a Keras model file (usually in `.h5` format).
 
 ### 3. Testing
@@ -84,7 +84,7 @@ The process of developing the ASL to Text Converter involves three main steps: d
   1. Run the `test.py` script.
   2. The script loads the trained Keras model.
   3. It accesses the camera to capture live hand gestures.
-  4. The model predicts the corresponding ASL sign in real-time, displaying the recognized letter on the screen.
+  4. The model predicts the corresponding Sign Language in real-time, displaying the recognized letter on the screen.
 
 
 
