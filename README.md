@@ -3,9 +3,6 @@
 
 [![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=450&size=40&duration=2500&pause=1000&width=1500&height=70&lines=%F0%9F%A4%98+Sign+Language+To+Text+Convertor+for+Speech+Impaired)](https://git.io/typing-svg)
 
-**Communication** is the act of transferring information from one place to another. Being able to communicate effectively is perhaps the most important of all life skills. It is what enables us to pass information to other people, and to understand what is said to us.
-Sign languages are an extremely important communication tool for many deaf and hard-of-hearing people and also for people who cannot speak.
-
 The **Sign Language to Text Converter for Speech Impaired** is a project aimed at translating Sign Language hand gestures into written text. This tool leverages machine learning and computer vision techniques to interpret sign language and provide accurate translations, making communication more accessible for deaf and hard-of-hearing individuals.
 
 ## 🚀 Features
